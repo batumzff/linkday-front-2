@@ -1,0 +1,266 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Cursor Rules - Linktree Clone with shadcn/ui
+
+## Project Context
+This is a modern Linktree-style personal link sharing application built with Next.js 14+, TypeScript, Tailwind CSS, and shadcn/ui components. The application features authentication, profile management, link management with drag-and-drop, public profile pages, and analytics.
+
+## MCP Tool Usage
+
+### shadcn/ui Integration
+- **ALWAYS use the shadcn/ui MCP when adding UI components**
+- Install components through the MCP rather than manually copying code
+- Prefer shadcn/ui components over custom implementations for common UI patterns
+- Use the MCP to add new component variants and customize existing ones
+
+### Component Priority Order
+1. shadcn/ui components (via MCP) - Primary choice for all UI elements
+2. Headless UI components - Only when shadcn/ui doesn't have the component
+3. Custom components - Only for application-specific functionality
+
+## Technology Stack
+
+### Core Technologies
+- **Frontend**: Next.js 14+ with App Router
+- **Language**: TypeScript (strict mode enabled)
+- **Styling**: Tailwind CSS with shadcn/ui
+- **State Management**: Zustand + React Query/TanStack Query
+- **Authentication**: NextAuth.js v5
+- **Database**: PostgreSQL with Prisma ORM
+- **Validation**: Zod schemas
+- **Forms**: React Hook Form
+- **Drag & Drop**: @dnd-kit/sortable
+
+### UI/UX Guidelines
+- **Design System**: Follow shadcn/ui design tokens and patterns
+- **Color Palette**: Soft pastels and light mode default with dark mode support
+- **Typography**: Modern sans-serif (Inter or similar)
+- **Spacing**: Consistent use of Tailwind spacing scale
+- **Animations**: Subtle transitions using Tailwind classes and Framer Motion
+- **Responsiveness**: Mobile-first approach with responsive design
+
+## File Structure and Naming
+
+### Directory Structure
+```
+src/
+├── app/                     # Next.js App Router pages
+│   ├── (auth)/             # Auth group routes
+│   ├── dashboard/          # Protected dashboard routes
+│   ├── [username]/         # Dynamic public profile routes
+│   └── api/               # API routes
+├── components/
+│   ├── ui/                # shadcn/ui components (auto-generated)
+│   ├── forms/             # Form components
+│   ├── dashboard/         # Dashboard-specific components
+│   ├── public/            # Public profile components
+│   └── layout/            # Layout components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utilities and configurations
+├── stores/                # Zustand stores
+├── types/                 # TypeScript type definitions
+└── styles/                # Global styles
+```
+
+### Naming Conventions
+- **Components**: PascalCase (e.g., `LinkCard.tsx`, `ProfileEditor.tsx`)
+- **Hooks**: camelCase with "use" prefix (e.g., `useLinks.ts`, `useProfile.ts`)
+- **Utils**: camelCase (e.g., `formatUrl.ts`, `validateLink.ts`)
+- **Types**: PascalCase with descriptive names (e.g., `UserProfile`, `LinkItem`)
+- **API Routes**: kebab-case (e.g., `api/user-profile`, `api/links/reorder`)
+
+## Code Style and Patterns
+
+### TypeScript Guidelines
+- Use strict TypeScript configuration
+- Define interfaces for all data structures
+- Use discriminated unions for state management
+- Prefer `type` over `interface` for simple object shapes
+- Use proper generic constraints and utility types
+
+### React Patterns
+- Prefer function components with hooks
+- Use compound component patterns for complex UI
+- Implement proper error boundaries
+- Use React.memo() for performance optimization when needed
+- Follow the "lift state up" principle
+
+### State Management
+- Use Zustand for client-side state (user preferences, UI state)
+- Use React Query for server state management
+- Keep component state local when possible
+- Use proper error and loading states
+
+### Form Handling
+```typescript
+// Preferred form pattern with React Hook Form + Zod
+const formSchema = z.object({
+  title: z.string().min(1).max(100),
+  url: z.string().url(),
+  description: z.string().max(200).optional(),
+})
+
+const form = useForm<z.infer<typeof formSchema>>({
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    title: "",
+    url: "",
+    description: "",
+  },
+})
+```
+
+## Component Development Guidelines
+
+### shadcn/ui Usage
+- **Always check shadcn/ui first** before creating custom components
+- Use the MCP to install components: `@ui button`, `@ui card`, `@ui form`, etc.
+- Customize components by extending the base classes rather than overriding
+- Follow shadcn/ui naming conventions and prop patterns
+
+### Component Structure
+```typescript
+// Standard component structure
+interface ComponentProps {
+  // Props definition
+}
+
+export function ComponentName({ ...props }: ComponentProps) {
+  // Hooks
+  // State
+  // Event handlers
+  // Render logic
+  
+  return (
+    <div className="component-styles">
+      {/* JSX */}
+    </div>
+  )
+}
+```
+
+### CSS and Styling
+- Use Tailwind utility classes primarily
+- Create component variants using `cn()` utility
+- Use CSS variables for theme customization
+- Follow shadcn/ui color and spacing tokens
+- Implement proper dark mode support
+
+## Application-Specific Guidelines
+
+### Authentication Flow
+- Use NextAuth.js with proper session management
+- Implement protected routes with middleware
+- Handle loading and error states for auth operations
+- Use proper TypeScript types for session data
+
+### Link Management
+- Implement proper drag-and-drop with @dnd-kit
+- Use optimistic updates for better UX
+- Validate URLs and sanitize user input
+- Implement proper error handling for link operations
+
+### Public Profiles
+- Use Next.js dynamic routes for usernames
+- Implement proper SEO with metadata API
+- Use static generation where possible
+- Handle 404 cases gracefully
+
+### Analytics and Tracking
+- Implement privacy-compliant tracking
+- Use proper data aggregation patterns
+- Handle large datasets efficiently
+- Provide real-time updates where appropriate
+
+## Performance Guidelines
+
+### Optimization Strategies
+- Use Next.js Image component for all images
+- Implement proper loading states and skeleton components
+- Use React.lazy() for code splitting when appropriate
+- Optimize database queries with proper indexing
+
+### Bundle Optimization
+- Use dynamic imports for large dependencies
+- Minimize shadcn/ui component bundle by only importing used components
+- Implement proper tree shaking
+- Use proper TypeScript compilation settings
+
+## Testing Patterns
+
+### Component Testing
+- Use React Testing Library for component tests
+- Test user interactions, not implementation details
+- Mock external dependencies properly
+- Test accessibility features
+
+### Integration Testing
+- Test complete user flows
+- Use proper test data and fixtures
+- Mock API calls appropriately
+- Test error scenarios
+
+## Security Best Practices
+
+### Input Validation
+- Use Zod schemas for all user inputs
+- Sanitize URLs and text content
+- Implement proper rate limiting
+- Validate file uploads thoroughly
+
+### Authentication Security
+- Use secure session management
+- Implement proper CSRF protection
+- Handle sensitive data appropriately
+- Use environment variables for secrets
+
+## Common Commands and Workflows
+
+### Adding shadcn/ui Components
+```bash
+# Use MCP in Cursor instead of CLI
+@ui button          # Adds button component
+@ui card           # Adds card component
+@ui form           # Adds form components
+@ui dialog         # Adds dialog/modal components
+```
+
+### Development Workflow
+1. Use shadcn/ui MCP for UI components
+2. Implement business logic with proper TypeScript
+3. Add proper error handling and loading states
+4. Test components with React Testing Library
+5. Optimize performance with React.memo() if needed
+
+## Error Handling Patterns
+
+### Client-Side Errors
+- Use React Error Boundaries for component errors
+- Implement proper fallback UI components
+- Log errors appropriately for debugging
+- Show user-friendly error messages
+
+### API Error Handling
+- Use consistent error response formats
+- Implement proper HTTP status codes
+- Handle network errors gracefully
+- Provide retry mechanisms where appropriate
+
+## Accessibility Guidelines
+
+### ARIA and Semantic HTML
+- Use proper semantic HTML elements
+- Implement ARIA labels and descriptions
+- Ensure keyboard navigation works properly
+- Test with screen readers
+
+### Visual Accessibility
+- Maintain proper color contrast ratios
+- Use focus indicators for interactive elements
+- Implement responsive text sizing
+- Support reduced motion preferences
+
+Remember: Always prioritize using shadcn/ui components via the MCP tool before implementing custom solutions. This ensures consistency, accessibility, and maintainability throughout the application.
