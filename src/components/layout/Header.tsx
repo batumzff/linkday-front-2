@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { User, LogOut, Settings } from 'lucide-react'
 
 export function Header() {
-  const { user, isAuthenticated, logout } = useAuthStore()
+  const { user, isAuthenticated, logout } = useAuth()
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

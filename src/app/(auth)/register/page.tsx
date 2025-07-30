@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -8,17 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { userRegistrationSchema, type UserRegistrationData } from '@/lib/validations'
-import { useAuthStore } from '@/stores/useAuthStore'
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { Mail, Lock, User, Eye, EyeOff, AtSign } from 'lucide-react'
 import { useState } from 'react'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const { setLoading, setError, clearError } = useAuthStore()
+  const router = useRouter()
+  const { register, isLoading, error, clearError } = useAuth()
 
   const form = useForm<UserRegistrationData>({
     resolver: zodResolver(userRegistrationSchema),
     defaultValues: {
+      name: '',
       email: '',
       username: '',
       password: '',
@@ -27,19 +30,17 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: UserRegistrationData) => {
     try {
-      setLoading(true)
       clearError()
-      
-      // TODO: Implement actual registration logic
-      console.log('Registration data:', data)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      await register({
+        name: data.name,
+        email: data.email,
+        username: data.username,
+        password: data.password,
+      })
+      // Auth layout otomatik olarak yönlendirecek
     } catch (error) {
-      setError('Registration failed. Please try again.')
-    } finally {
-      setLoading(false)
+      console.error('Registration error:', error)
+      // Error is handled by the store
     }
   }
 
@@ -56,6 +57,27 @@ export default function RegisterPage() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            {...field}
+                            placeholder="Enter your full name"
+                            className="pl-10"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -86,7 +108,7 @@ export default function RegisterPage() {
                       <FormLabel>Username</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <AtSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             {...field}
                             placeholder="Choose a username"
@@ -132,11 +154,17 @@ export default function RegisterPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
-                  Create Account
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
             </Form>
+
+            {error && (
+              <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">

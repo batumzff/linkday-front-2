@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -8,13 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { userLoginSchema, type UserLoginData } from '@/lib/validations'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuth } from '@/hooks/useAuth'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const { setLoading, setError, clearError } = useAuthStore()
+  const router = useRouter()
+  const { login, isLoading, error, clearError } = useAuth()
 
   const form = useForm<UserLoginData>({
     resolver: zodResolver(userLoginSchema),
@@ -26,19 +28,12 @@ export default function LoginPage() {
 
   const onSubmit = async (data: UserLoginData) => {
     try {
-      setLoading(true)
       clearError()
-      
-      // TODO: Implement actual login logic
-      console.log('Login data:', data)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      await login(data.email, data.password)
+      // Auth layout otomatik olarak yönlendirecek
     } catch (error) {
-      setError('Invalid email or password')
-    } finally {
-      setLoading(false)
+      console.error('Login error:', error)
+      // Error is handled by the store
     }
   }
 
@@ -110,11 +105,17 @@ export default function LoginPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
-                  Sign In
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
               </form>
             </Form>
+
+            {error && (
+              <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">

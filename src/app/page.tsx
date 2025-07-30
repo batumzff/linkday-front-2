@@ -1,9 +1,14 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Link as LinkIcon, BarChart3, Palette } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function HomePage() {
+  const { isAuthenticated, user } = useAuth()
+
   return (
     <div className="container mx-auto px-4 py-16">
       {/* Hero Section */}
@@ -17,15 +22,33 @@ export default function HomePage() {
           Track clicks, customize your design, and grow your online presence.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" asChild>
-            <Link href="/register">
-              Get Started Free
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="lg" asChild>
-            <Link href="/demo">View Demo</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button size="lg" asChild>
+                <Link href="/dashboard">
+                  Go to Dashboard
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href={`/${user?.username}`}>
+                  View My Profile
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="lg" asChild>
+                <Link href="/register">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/demo">View Demo</Link>
+              </Button>
+            </>
+          )}
         </div>
       </section>
 
