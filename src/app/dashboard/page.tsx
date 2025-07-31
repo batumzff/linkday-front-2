@@ -2,14 +2,32 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Link as LinkIcon, BarChart3, Users, TrendingUp } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Link as LinkIcon, BarChart3, Users, TrendingUp, Copy, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { useLinks } from '@/hooks/useLinks'
 import { useAuth } from '@/hooks/useAuth'
+import { useState } from 'react'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const { data: links, isLoading } = useLinks()
+  const [copied, setCopied] = useState(false)
+
+
+
+  const handleCopyPublicUrl = async () => {
+    if (!user?.username) return
+    
+    try {
+      const publicUrl = `http://localhost:3001/u/${user.username}`
+      await navigator.clipboard.writeText(publicUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy URL:', error)
+    }
+  }
 
   // Calculate stats from real data
   const totalLinks = links?.length || 0
@@ -172,6 +190,77 @@ export default function DashboardPage() {
                 <Link href="/dashboard/analytics">
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Analytics
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Public Profile</CardTitle>
+            <CardDescription>
+              Share your profile with others
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Your Public URL</span>
+              </div>
+              {authLoading ? (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value="Loading..."
+                    readOnly
+                    className="flex-1"
+                    disabled
+                  />
+                  <Button variant="outline" size="sm" disabled>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy
+                  </Button>
+                </div>
+              ) : user?.username ? (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={`http://localhost:3001/u/${user.username}`}
+                    readOnly
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyPublicUrl}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    {copied ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value="Not available"
+                    readOnly
+                    className="flex-1"
+                    disabled
+                  />
+                  <Button variant="outline" size="sm" disabled>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy
+                  </Button>
+                </div>
+              )}
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                asChild
+                disabled={authLoading || !user?.username}
+              >
+                <Link href={user?.username ? `/u/${user.username}` : '#'} target="_blank">
+                  <Globe className="mr-2 h-4 w-4" />
+                  View Public Profile
                 </Link>
               </Button>
             </div>

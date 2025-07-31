@@ -12,7 +12,7 @@ import {
   Settings,
   Plus
 } from 'lucide-react'
-import { useAuthCheck } from '@/hooks/useAuthCheck'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useEffect } from 'react'
 
 const navigation = [
@@ -30,14 +30,17 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuthCheck()
+  const { isAuthenticated, isLoading, checkAuth } = useAuthStore()
 
   useEffect(() => {
-    // Eğer authentication check tamamlandı ve kullanıcı giriş yapmamışsa login'e yönlendir
-    if (!isLoading && !isAuthenticated) {
+    // Token varsa auth check yap
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    if (token && !isAuthenticated && !isLoading) {
+      checkAuth()
+    } else if (!token && !isLoading) {
       router.replace('/login')
     }
-  }, [isAuthenticated, isLoading, router])
+  }, [isAuthenticated, isLoading, router, checkAuth])
 
   // Show loading state while checking authentication
   if (isLoading) {

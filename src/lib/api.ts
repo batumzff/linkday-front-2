@@ -123,20 +123,37 @@ class ApiClient {
 
   // Authentication endpoints
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Login failed')
+    const url = `${this.baseURL}/api/auth/login`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
     }
-    
-    if (response.data.token) {
-      this.setToken(response.data.token)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed')
+      }
+
+      if (data.success && data.token && data.user) {
+        this.setToken(data.token)
+        return data
+      }
+
+      throw new Error(data.message || 'Login failed')
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
     }
-    
-    return response.data
   }
 
   async register(userData: {
@@ -145,30 +162,75 @@ class ApiClient {
     username: string
     password: string
   }): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    })
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Registration failed')
+    const url = `${this.baseURL}/api/auth/register`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
     }
-    
-    if (response.data.token) {
-      this.setToken(response.data.token)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(userData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed')
+      }
+
+      if (data.success && data.token && data.user) {
+        this.setToken(data.token)
+        return data
+      }
+
+      throw new Error(data.message || 'Registration failed')
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
     }
-    
-    return response.data
   }
 
   async getCurrentUser(): Promise<AuthResponse['user']> {
-    const response = await this.request<AuthResponse['user']>('/api/auth/me')
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to get current user')
+    const url = `${this.baseURL}/api/auth/me`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
     }
-    
-    return response.data
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.setToken(null)
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
+        }
+        throw new Error(data.message || 'Failed to get current user')
+      }
+
+      return data
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   // User profile endpoints
@@ -195,8 +257,41 @@ class ApiClient {
 
   // Links endpoints
   async getLinks(): Promise<LinkResponse[]> {
-    const response = await this.request<LinkResponse[]>('/api/links')
-    return response.data!
+    const url = `${this.baseURL}/api/links`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.setToken(null)
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
+        }
+        throw new Error(data.message || 'Failed to get links')
+      }
+
+      return data.links || []
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   async createLink(linkData: {
@@ -205,11 +300,42 @@ class ApiClient {
     description?: string
     icon?: string
   }): Promise<LinkResponse> {
-    const response = await this.request<LinkResponse>('/api/links', {
-      method: 'POST',
-      body: JSON.stringify(linkData),
-    })
-    return response.data!
+    const url = `${this.baseURL}/api/links`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(linkData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.setToken(null)
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
+        }
+        throw new Error(data.message || 'Failed to create link')
+      }
+
+      return data.link
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   async updateLink(linkId: string, linkData: {
@@ -219,39 +345,176 @@ class ApiClient {
     icon?: string
     isActive?: boolean
   }): Promise<LinkResponse> {
-    const response = await this.request<LinkResponse>(`/api/links/${linkId}`, {
-      method: 'PUT',
-      body: JSON.stringify(linkData),
-    })
-    return response.data!
+    const url = `${this.baseURL}/api/links/${linkId}`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(linkData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.setToken(null)
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
+        }
+        throw new Error(data.message || 'Failed to update link')
+      }
+
+      return data.link
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   async deleteLink(linkId: string): Promise<{ success: boolean; message: string }> {
-    const response = await this.request<{ success: boolean; message: string }>(`/api/links/${linkId}`, {
-      method: 'DELETE',
-    })
-    return response.data!
+    const url = `${this.baseURL}/api/links/${linkId}`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.setToken(null)
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
+        }
+        throw new Error(data.message || 'Failed to delete link')
+      }
+
+      return data
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   async reorderLinks(linkIds: string[]): Promise<{ success: boolean; message: string }> {
-    const response = await this.request<{ success: boolean; message: string }>('/api/links/reorder', {
-      method: 'PATCH',
-      body: JSON.stringify({ linkIds }),
-    })
-    return response.data!
+    const url = `${this.baseURL}/api/links/reorder`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify({ linkIds }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.setToken(null)
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
+        }
+        throw new Error(data.message || 'Failed to reorder links')
+      }
+
+      return data
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   // Public profile endpoints
   async getPublicProfile(username: string): Promise<ProfileResponse> {
-    const response = await this.request<ProfileResponse>(`/u/${username}`)
-    return response.data!
+    const url = `${this.baseURL}/u/${username}`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Profile not found')
+      }
+
+      return data
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   async trackClick(linkId: string): Promise<{ success: boolean; message: string; redirectUrl: string }> {
-    const response = await this.request<{ success: boolean; message: string; redirectUrl: string }>(`/api/click/${linkId}`, {
-      method: 'POST',
-    })
-    return response.data!
+    const url = `${this.baseURL}/api/click/${linkId}`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to track click')
+      }
+
+      return data
+    } catch (error) {
+      console.error('API Error:', error)
+      throw error
+    }
   }
 
   logout() {

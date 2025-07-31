@@ -31,7 +31,7 @@
 ## 🚀 Test Adımları
 
 ### Adım 1: Register Sayfası
-1. http://localhost:3002/register adresine git
+1. http://localhost:3001/register adresine git
 2. Form'u doldur:
    - Full Name: Test User 2
    - Email: test2@example.com
@@ -42,7 +42,7 @@
 5. Başarılı kayıt sonrası dashboard'a yönlendirildiğini kontrol et
 
 ### Adım 2: Login Sayfası
-1. http://localhost:3002/login adresine git
+1. http://localhost:3001/login adresine git
 2. Form'u doldur:
    - Email: test2@example.com
    - Password: TestPass123
@@ -54,6 +54,12 @@
 1. Dashboard'da kullanıcı bilgilerinin görüntülendiğini kontrol et
 2. Header'da kullanıcı adının görüntülendiğini kontrol et
 3. Logout butonunun çalıştığını kontrol et
+
+### Adım 4: Debug Sayfası
+1. http://localhost:3001/debug adresine git
+2. Auth state'i kontrol et
+3. Token durumunu kontrol et
+4. User data'yı kontrol et
 
 ## 🔍 Kontrol Noktaları
 

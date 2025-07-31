@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth } from './useAuth'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 export function useAuthCheck() {
-  const { checkAuth, isAuthenticated, isLoading } = useAuth()
+  const { checkAuth, isAuthenticated, isLoading } = useAuthStore()
   const [hasChecked, setHasChecked] = useState(false)
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export function useAuthCheck() {
     if (!hasChecked) {
       initAuth()
     }
-  }, [checkAuth, hasChecked])
+  }, [hasChecked]) // checkAuth dependency'sini kaldırdık
 
   return { isAuthenticated, isLoading: isLoading || !hasChecked }
 } 
